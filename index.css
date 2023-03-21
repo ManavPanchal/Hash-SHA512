@@ -1,0 +1,40 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+#sha_generator{
+    width: 100vw;
+    height: 100vh;
+    background-image: url("./GettyImages-1024763670.jpg");
+    background-size:100vw 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.card{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: white;
+    font-size: 25px;
+    width: 400px;
+    height: fit-content;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.594);
+}
+#inputString{
+    font-size: 20px;
+    width: max-content;
+    height: 40px;
+}
+.btn button{
+    font-size: 20px;
+    color: white;
+    margin-top: 5px;
+    padding: 4px;
+    height: 27px;
+    background-color: #082d5a;
+    border: none;
+}
+#shaOutput{font-size: 20px;}

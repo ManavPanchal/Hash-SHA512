@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./index.css">
+    <title>SHA-512 Generator</title>
+    <script src="./index.js"></script>
+</head>
+<body>
+    <div id="sha_generator">
+        <div id="sha" class="card">
+            <label for="input_field">
+                INPUT STRING:
+            </label>
+            <input type="text" id="inputString">
+            <div class="btn">
+                <button id="clear" onclick="clearField()">Clear</button>
+                <button id="generate" onclick="generateHash()">Generate</button>
+            </div>
+            <label for="sha_output"> SHA-512 output:</label>
+            <textarea name="sha_output" cols="35" rows="10" id="shaOutput" hidden></textarea>
+        </div>
+    </div>
+</body>
+</html>
