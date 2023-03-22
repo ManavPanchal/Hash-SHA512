@@ -59,7 +59,7 @@ function SHA(str) {
         var length = binarray.length * 4;
         var srcByte;
         for (var i = 0; i < length; i += 1) {
-            srcByte = binarray[i >> 2] >> ((3 - (i % 4)) * 8);
+            srcByte = binarray[i >> 2] >> ((3 - (i % 4)) * charsize);
             str +=
                 hex_tab.charAt((srcByte >> 4) & 0xf) +
                 hex_tab.charAt(srcByte & 0xf);
@@ -167,42 +167,6 @@ function SHA(str) {
             );
         }
     }
-    function sigma0(x) {
-        var rotr28 = rotr(x, 28);
-        var rotr34 = rotr(x, 34);
-        var rotr39 = rotr(x, 39);
-        return new int64(
-            rotr28.highOrder ^ rotr34.highOrder ^ rotr39.highOrder,
-            rotr28.lowOrder ^ rotr34.lowOrder ^ rotr39.lowOrder
-        );
-    }
-    function sigma1(x) {
-        var rotr14 = rotr(x, 14);
-        var rotr18 = rotr(x, 18);
-        var rotr41 = rotr(x, 41);
-        return new int64(
-            rotr14.highOrder ^ rotr18.highOrder ^ rotr41.highOrder,
-            rotr14.lowOrder ^ rotr18.lowOrder ^ rotr41.lowOrder
-        );
-    }
-    function gamma0(x) {
-        var rotr1 = rotr(x, 1),
-            rotr8 = rotr(x, 8),
-            shr7 = shr(x, 7);
-        return new int64(
-            rotr1.highOrder ^ rotr8.highOrder ^ shr7.highOrder,
-            rotr1.lowOrder ^ rotr8.lowOrder ^ shr7.lowOrder
-        );
-    }
-    function gamma1(x) {
-        var rotr19 = rotr(x, 19);
-        var rotr61 = rotr(x, 61);
-        var shr6 = shr(x, 6);
-        return new int64(
-            rotr19.highOrder ^ rotr61.highOrder ^ shr6.highOrder,
-            rotr19.lowOrder ^ rotr61.lowOrder ^ shr6.lowOrder
-        );
-    }
     function shr(x, n) {
         if (n <= 32) {
             return new int64(
@@ -213,10 +177,47 @@ function SHA(str) {
             return new int64(0, x.highOrder << (32 - n));
         }
     }
+    function bigSigma0(x) {
+        var rotr28 = rotr(x, 28);
+        var rotr34 = rotr(x, 34);
+        var rotr39 = rotr(x, 39);
+        return new int64(
+            rotr28.highOrder ^ rotr34.highOrder ^ rotr39.highOrder,
+            rotr28.lowOrder ^ rotr34.lowOrder ^ rotr39.lowOrder
+        );
+    }
+    function bigSigma1(x) {
+        var rotr14 = rotr(x, 14);
+        var rotr18 = rotr(x, 18);
+        var rotr41 = rotr(x, 41);
+        return new int64(
+            rotr14.highOrder ^ rotr18.highOrder ^ rotr41.highOrder,
+            rotr14.lowOrder ^ rotr18.lowOrder ^ rotr41.lowOrder
+        );
+    }
+    function smallSigma0(x) {
+        var rotr1 = rotr(x, 1),
+            rotr8 = rotr(x, 8),
+            shr7 = shr(x, 7);
+        return new int64(
+            rotr1.highOrder ^ rotr8.highOrder ^ shr7.highOrder,
+            rotr1.lowOrder ^ rotr8.lowOrder ^ shr7.lowOrder
+        );
+    }
+    function smallSigma1(x) {
+        var rotr19 = rotr(x, 19);
+        var rotr61 = rotr(x, 61);
+        var shr6 = shr(x, 6);
+        return new int64(
+            rotr19.highOrder ^ rotr61.highOrder ^ shr6.highOrder,
+            rotr19.lowOrder ^ rotr61.lowOrder ^ shr6.lowOrder
+        );
+    }
+    
     str = utf8_encode(str);
     strlen = str.length * charsize;
     str = str2bin(str);
-    str[strlen >> 5] |= 0x80 << (24 - (strlen % 32));
+    str[strlen >> 5] |= 0x80 << (32 - charsize - (strlen % 32));
     str[(((strlen + 128) >> 10) << 5) + 31] = strlen;
     // looping over string for each 1024 block
     for (var i = 0; i < str.length; i += 32) {
@@ -233,15 +234,16 @@ function SHA(str) {
             if (j < 16) {
                 W[j] = new int64(str[j * 2 + i], str[j * 2 + i + 1]);
             } else {
+                // internal method to create a new word using previous 16 word
                 W[j] = additionModulo_4(
-                    gamma1(W[j - 2]),
+                    smallSigma1(W[j - 2]),
                     W[j - 7],
-                    gamma0(W[j - 15]),
+                    smallSigma0(W[j - 15]),
                     W[j - 16]
                 );
             }
-            T1 = additionModulo_5(h, sigma1(e), ch(e, f, g), K[j], W[j]);
-            T2 = additionModulo_2(sigma0(a), maj(a, b, c));
+            T1 = additionModulo_5(h, bigSigma1(e), ch(e, f, g), K[j], W[j]);
+            T2 = additionModulo_2(bigSigma0(a), maj(a, b, c));
             h = g;
             g = f;
             f = e;
@@ -262,6 +264,7 @@ function SHA(str) {
     }
     var binarray = [];
     for (var i = 0; i < H.length; i++) {
+        console.log(typeof H[i].highOrder);
         binarray.push(H[i].highOrder);
         binarray.push(H[i].lowOrder);
     }
